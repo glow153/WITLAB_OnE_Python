@@ -15,7 +15,7 @@ class ScrapSunRiseSet:
 
         if self.debug:
             print('dbg> init driver...')
-        chrome_driver_path = '/home/witlab/workspace/Pycharm/sun-riseset-scrapper/.chromedriver/chromedriver'
+        chrome_driver_path = './driver/chromedriver.exe'
         self.chrome_options = Options()
         self.chrome_options.add_argument('--headless')
         self.driver = webdriver.Chrome(chrome_options=self.chrome_options,
