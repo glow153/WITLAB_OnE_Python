@@ -1,12 +1,12 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import os
 
 
 class ScrapSunRiseSet:
     baseUrl = 'https://astro.kasi.re.kr:444/life/pageView/9'
     url = ''
-    chrome_options = None
+    options = None
     driver = None
     debug = False
 
@@ -15,11 +15,11 @@ class ScrapSunRiseSet:
 
         if self.debug:
             print('dbg> init driver...')
-        chrome_driver_path = './driver/chromedriver.exe'
-        self.chrome_options = Options()
-        self.chrome_options.add_argument('--headless')
-        self.driver = webdriver.Chrome(chrome_options=self.chrome_options,
-                                       executable_path=chrome_driver_path)
+        chrome_driver_path = os.getcwd() + '/driver/chromedriver.exe'
+        self.options = webdriver.ChromeOptions()
+        self.options.add_argument('headless')
+        self.options.add_argument('disable-gpu')
+        self.driver = webdriver.Chrome(chrome_driver_path, options=self.options)
         if self.debug:
             print('dbg> complete!')
 
