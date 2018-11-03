@@ -4,7 +4,7 @@ import os
 
 
 class ScrapSunRiseSet:
-    baseUrl = 'https://astro.kasi.re.kr:444/life/pageView/9'
+    baseUrl = 'https://astro.kasi.re.kr/life/pageView/9'
     url = ''
     options = None
     driver = None
@@ -12,13 +12,12 @@ class ScrapSunRiseSet:
 
     def __init__(self, debug):
         self.debug = debug
-
         if self.debug:
             print('dbg> init driver...')
         chrome_driver_path = os.getcwd() + '/driver/chromedriver.exe'
         self.options = webdriver.ChromeOptions()
         self.options.add_argument('headless')
-        self.options.add_argument('disable-gpu')
+        # self.options.add_argument('disable-gpu')
         self.driver = webdriver.Chrome(chrome_driver_path, options=self.options)
         if self.debug:
             print('dbg> complete!')
