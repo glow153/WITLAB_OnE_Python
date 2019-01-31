@@ -255,25 +255,25 @@ class CasEntity(object):
                 weightl = eryf(wll)
                 weightr = eryf(wlr)
             elif weight_func == 'vitd':
-                from nldc_entity.ref_func import vitd_weight_func_interpolated as vitdf
+                from nldc_entity.ref_func import vitd_weight_func as vitdf
                 weightl = vitdf(wll)
                 weightr = vitdf(wlr)
             elif weight_func == 'uv_hazard':
-                from nldc_entity.ref_func import actinic_uv_weight_func as actuvf
-                weightl = actuvf(wll)
-                weightr = actuvf(wlr)
+                from nldc_entity.ref_func import uv_hazard_weight_func as uvhzf
+                weightl = uvhzf(wll)
+                weightr = uvhzf(wlr)
             else:
                 weightl = 1
                 weightr = 1
 
-            if range_val1 <= wll < range_val2:
+            if range_val1 <= int(float(table[i][0])) < range_val2:
                 try:
                     # calculate weighted integration
                     if alg == 'trapezoid':
                         e = 0.5 * (wlr - wll) * (irdl * weightl + irdr * weightr)
                     else:  # alg == 'rect'
                         # print(str(wll) + '\t' + str(irdl*weightl))
-                        e = (wlr - wll) * (irdl * weightl)
+                        e = (wlr - wll) * irdl * weightl
                 except TypeError:
                     print('exception!')
                     break

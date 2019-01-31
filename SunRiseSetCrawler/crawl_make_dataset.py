@@ -6,8 +6,8 @@ from sun_riseset_jake import ScrapSunRiseSet
 ssrs = ScrapSunRiseSet(False)
 
 # set vars for scrap
-start_date = '2018-06-08'
-end_date = '2018-06-11'
+start_date = '2017-04-01'
+end_date = '2017-04-02'
 address = '충남+천안시+서북구+천안대로+1223-24'
 
 # set vals for scrap

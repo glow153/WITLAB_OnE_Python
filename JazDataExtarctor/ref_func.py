@@ -29,7 +29,7 @@ def vitd_weight_func(wavelength):
 
 def vitd_weight_func_interpolated(wavelength):
     # 비타민 D 가중함수
-    if 252 <= int(wavelength) < 330:
+    if 252 <= int(wavelength) <= 330:
         weight_table = [0.036, 0.039, 0.043, 0.047, 0.051, 0.056, 0.061, 0.066, 0.075, 0.084,
                         0.093, 0.102, 0.112, 0.122, 0.133, 0.146, 0.160, 0.177, 0.195, 0.216,
                         0.238, 0.263, 0.289, 0.317, 0.346, 0.376, 0.408, 0.440, 0.474, 0.543,
@@ -52,7 +52,7 @@ def vitd_weight_func_interpolated(wavelength):
 
 
 # VERIFIED CALCULATION AND FUNCTION 180727
-def actinic_uv_weight_func(wavelength, dbg=False):
+def uv_hazard_weight_func(wavelength, dbg=False):
     # 자외선 위해 가중함수 (IEC 62471)
     if 200 <= int(wavelength) <= 400:
         wltable = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250,
@@ -84,3 +84,79 @@ def actinic_uv_weight_func(wavelength, dbg=False):
     else:
         return 0
 
+
+def uv_hazard_weight_func_2(wavelength, dbg=False):
+    # 자외선 위해 가중함수 (IEC 62471)
+    if 200 <= int(wavelength) <= 400:
+        actinic_uv_func_map = {
+            200: 0.030,
+            205: 0.051,
+            210: 0.075,
+            215: 0.095,
+            220: 0.120,
+            225: 0.150,
+            230: 0.190,
+            235: 0.240,
+            240: 0.300,
+            245: 0.360,
+            250: 0.430,
+            254: 0.500,
+            255: 0.520,
+            260: 0.650,
+            265: 0.810,
+            270: 1.000,
+            275: 0.960,
+            280: 0.880,
+            285: 0.770,
+            290: 0.640,
+            295: 0.540,
+            297: 0.460,
+            300: 0.300,
+            303: 0.120,
+            305: 0.060,
+            308: 0.026,
+            310: 0.015,
+            313: 0.006,
+            315: 0.003,
+            316: 0.0024,
+            317: 0.002,
+            318: 0.0016,
+            319: 0.0012,
+            320: 0.001,
+            322: 0.00067,
+            323: 0.00054,
+            325: 0.0005,
+            328: 0.00044,
+            330: 0.00041,
+            333: 0.00037,
+            335: 0.00034,
+            340: 0.00028,
+            345: 0.00024,
+            350: 0.0002,
+            355: 0.00016,
+            360: 0.00013,
+            365: 0.00011,
+            370: 0.000093,
+            375: 0.000077,
+            380: 0.000064,
+            385: 0.000053,
+            390: 0.000044,
+            395: 0.000036,
+            400: 0.000030
+        }
+        wltable = list(actinic_uv_func_map.keys())
+        for i in range(len(actinic_uv_func_map.keys()) - 1):
+            if wltable[i] <= wavelength < wltable[i + 1]:
+                x = wavelength
+                x1 = wltable[i]
+                x2 = wltable[i + 1]
+                y1 = actinic_uv_func_map[x1]
+                y2 = actinic_uv_func_map[x2]
+
+                weight_interpolated = y1 + (y2 - y1) * (x - x1) / (x2 - x1)  # linear interpolation
+
+                if dbg:
+                    print(str(wavelength) + '\t' + str(weight_interpolated))
+
+                return weight_interpolated
+    return 0

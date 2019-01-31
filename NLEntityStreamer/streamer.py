@@ -19,17 +19,18 @@ class MyEventHandler(FileSystemEventHandler):
             time.sleep(1)  # for waiting for creating completed
             entity = CasEntity(event.src_path)
             print('send>>', entity.get_element('time'), ':', entity.get_dict())
-            self.kafka_producer.send('natural_light_entity', b'send entity')
+            self.kafka_producer.send('natural_light_entity',
+                                     str(entity.get_element('time') + ':' + entity.get_dict()).encode('ascii'))
         else:
             pass
 
 
 class NLEntityStreamer:
     def __init__(self):
-        self.dirpath = '/home/witlab/tmp'
+        self.dirpath = 'D:/Desktop/2018 natural/20181122'
 
     def start_streaming(self):
-        producer = KafkaProducer(bootstrap_servers='localhost:9092')
+        producer = KafkaProducer(bootstrap_servers='210.102.142.14:9092')
 
         observer = Observer()
         event_handler = MyEventHandler(observer, self.dirpath, producer)

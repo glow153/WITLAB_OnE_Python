@@ -29,7 +29,7 @@ def vitd_weight_func(wavelength):
 
 def vitd_weight_func_interpolated(wavelength):
     # 비타민 D 가중함수
-    if 252 <= int(wavelength) < 330:
+    if 252 <= int(wavelength) <= 330:
         weight_table = [0.036, 0.039, 0.043, 0.047, 0.051, 0.056, 0.061, 0.066, 0.075, 0.084,
                         0.093, 0.102, 0.112, 0.122, 0.133, 0.146, 0.160, 0.177, 0.195, 0.216,
                         0.238, 0.263, 0.289, 0.317, 0.346, 0.376, 0.408, 0.440, 0.474, 0.543,
@@ -52,7 +52,7 @@ def vitd_weight_func_interpolated(wavelength):
 
 
 # VERIFIED CALCULATION AND FUNCTION 180727
-def actinic_uv_weight_func(wavelength, dbg=False):
+def uv_hazard_weight_func(wavelength, dbg=False):
     # 자외선 위해 가중함수 (IEC 62471)
     if 200 <= int(wavelength) <= 400:
         wltable = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250,
