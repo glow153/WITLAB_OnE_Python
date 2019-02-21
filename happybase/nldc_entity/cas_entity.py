@@ -134,7 +134,7 @@ class CasEntity(object):
             self.__uv['euva_ratio'] = self.__uv['euva'] / self.__uv['euv']
             self.__uv['euvb_ratio'] = self.__uv['euvb'] / self.__uv['euv']
 
-        self.__uv['hazard_uv'] = self.get_ird(datatable, 200, 400, weight_func='uv_hazard', alg='trapezoid')
+        self.__uv['auv'] = self.get_ird(datatable, 200, 400, weight_func='actinic_uv', alg='trapezoid')
 
     def __parse_objdt(self, strdt):
         return datetime.datetime.strptime(strdt, '%m/%d/%Y %I:%M:%S %p')
@@ -255,25 +255,25 @@ class CasEntity(object):
                 weightl = eryf(wll)
                 weightr = eryf(wlr)
             elif weight_func == 'vitd':
-                from nldc_entity.ref_func import vitd_weight_func as vitdf
+                from nldc_entity.ref_func import vitd_weight_func_interpolated as vitdf
                 weightl = vitdf(wll)
                 weightr = vitdf(wlr)
-            elif weight_func == 'uv_hazard':
-                from nldc_entity.ref_func import uv_hazard_weight_func as uvhzf
-                weightl = uvhzf(wll)
-                weightr = uvhzf(wlr)
+            elif weight_func == 'actinic_uv':
+                from nldc_entity.ref_func import actinic_uv_weight_func as actuvf
+                weightl = actuvf(wll)
+                weightr = actuvf(wlr)
             else:
                 weightl = 1
                 weightr = 1
 
-            if range_val1 <= int(float(table[i][0])) < range_val2:
+            if range_val1 <= wll < range_val2:
                 try:
                     # calculate weighted integration
                     if alg == 'trapezoid':
                         e = 0.5 * (wlr - wll) * (irdl * weightl + irdr * weightr)
                     else:  # alg == 'rect'
                         # print(str(wll) + '\t' + str(irdl*weightl))
-                        e = (wlr - wll) * irdl * weightl
+                        e = (wlr - wll) * (irdl * weightl)
                 except TypeError:
                     print('exception!')
                     break
@@ -386,7 +386,7 @@ class CasEntity(object):
         # 각 파일별 데이터 추출하기
         for fname in filelist:
             datatable = self.get_specirrad_table(fname)
-            hazard_uv = self.get_ird(datatable, 200, 400, weight_func='uv_hazard')
+            auv = self.get_ird(datatable, 200, 400, weight_func='actinic_uv')
             uva = self.get_ird(datatable, 315, 400)
             uvb = self.get_ird(datatable, 280, 315)
             euva = self.get_ird(datatable, 315, 400, weight_func='ery')
@@ -418,7 +418,7 @@ class CasEntity(object):
             # print('time:', timestamp, ', euva:', euva, ', euvb:', euvb, ', ratio:', ratio, ', illum:', illum)
 
             # csv write
-            csv_writer.writerow([hazard_uv, uva, uvb, euva, euvb, uvi])
+            csv_writer.writerow([auv, uva, uvb, euva, euvb, uvi])
 
         outfile.close()
 
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     csv_writer = csv.writer(outfile)
 
     csv_writer.writerow(['tuv', 'uva', 'uvb', 'euv', 'euva', 'euvb',
-                         'uvi', 'duv', 'euva_ratio', 'euvb_ratio', 'hazard_uv'])
+                         'uvi', 'duv', 'euva_ratio', 'euvb_ratio', 'auv'])
 
     for fname in flist:
         # print('>>' + fname)

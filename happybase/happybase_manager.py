@@ -2,5 +2,7 @@ import happybase
 from nldc_entity.cas_entity import CasEntity
 
 class HappyBaseManager:
-    def __init__(self):
+    _addr = ''
+    def __init__(self, addr: str):
+
 
