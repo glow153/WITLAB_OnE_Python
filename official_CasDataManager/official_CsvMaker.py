@@ -10,13 +10,15 @@ outfile = open(rootdir + '/' + outputFileName, 'w', encoding='utf-8', newline=''
 # outfile = open('D:/Desktop/tmp/output.csv', 'w', encoding='utf-8', newline='')
 csv_writer = csv.writer(outfile)
 
-csv_writer.writerow(['time', 'uvi', 'uvb', 'euvb', 'uva', 'euva', 'duv', 'auv'])
+csv_writer.writerow(['time', 'int_time', 'ccdtemp', 'uvi', 'uvb', 'euvb', 'uva', 'euva', 'duv', 'auv'])
 
 for fname in flist:
     # print('>>' + fname)
     try:
         entity = CasEntity(fname)
         entity_row = [entity.get_datetime(tostr=True).split(' ')[1],
+                      entity.get_element('IntegrationTime'),
+                      entity.get_element('CCDTemperature'),
                       entity.get_element('uvi'),
                       entity.get_element('uvb'),
                       entity.get_element('euvb'),
