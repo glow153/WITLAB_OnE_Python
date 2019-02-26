@@ -13,14 +13,14 @@ class NLDataManager:
         self._server_addr = addr
         self._tablename = tablename
 
-    def connect(self):
+    def connect(self):  # HBase와 연결, connection은 객체변수로 유지
         self._hb_conn = happybase.Connection(self._server_addr)
         self._hb_table_conn = self._hb_conn.table(self._tablename)
 
     def disconnect(self):
         self._hb_conn.close()
 
-    def _getmerge_data2dict(self, datedir):
+    def _getmerge_data2dict(self, datedir):  # insert를 위한 메소드, isd파일 들어있는 폴더를 dictionary로 변환 후 통합
         flist = CasEntity.search(datedir)
         dict_merged_sp = {}
 
@@ -62,7 +62,7 @@ class NLDataManager:
 
         return dict_merged_sp
 
-    def _hb_insert_nle(self, dict_nlentity: dict):
+    def _hb_insert_nle(self, dict_nlentity: dict):  # merge 된 dictionary를 HBase에 insert
         rowkeyset = dict_nlentity.keys()
         for rowkey in rowkeyset:
             try:
@@ -71,7 +71,7 @@ class NLDataManager:
                 self.create_table()
                 self._hb_table_conn.put(rowkey, dict_nlentity[rowkey])
 
-    def create_table(self):
+    def create_table(self):  # HBase table 생성
         dict_families = {'measurement_conditions': dict(),
                          'results': dict(),
                          'general_information': dict(),
@@ -81,18 +81,18 @@ class NLDataManager:
         self._hb_conn.create_table(self._tablename, dict_families)
         self._hb_table_conn = self._hb_conn.table(self._tablename)
 
-    def insert_datedir(self, datedir: str):
+    def insert_datedir(self, datedir: str):  # 하나의 일자에 대한 isd 파일을 모아놓은 디렉터리의 모든 자연광 데이터 insert
         dict_dailydata = self._getmerge_data2dict(datedir)
         self._hb_insert_nle(dict_dailydata)
 
-    def select_datehm(self, dhm: str):  # dhm format: '%Y-%m-%d %H%M'
+    def select_datehm(self, dhm: str):  # HBase로부터 분 단위 데이터 조회, dhm format: '%Y-%m-%d %H%M'
         row = self._hb_table_conn.row(dhm, ['sp_ird'])
 
         # print dict pretty
         pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(row)
 
-    def delete_day(self, date):
+    def delete_day(self, date):  # 하루치 데이터 통째로 삭제
         from datetime import datetime, timedelta
         onemin = timedelta(minutes=1)
         startdt = datetime.strptime(date + ' 0000', '%Y-%m-%d %H%M')
@@ -108,9 +108,8 @@ class NLDataManager:
 
 
 if __name__ == "__main__":
-    nldmgr = NLDataManager('210.102.142.14', 'natural_light')
-    nldmgr.connect()
-    nldmgr.insert_datedir('D:/Desktop/2018 natural/20181120')
-    nldmgr.select_datehm('2018-11-20 1200')
-    nldmgr.disconnect()
+    nldmgr = NLDataManager('210.102.142.14', 'natural_light')  # HBase 서버 설정
+    nldmgr.connect()  # HBase 연결
+    nldmgr.select_datehm('2018-11-20 1200')  # 11월 20일 12시 정각 데이터 가져오기
+    nldmgr.disconnect()  # 종료 꼭 해줘야됨
 
