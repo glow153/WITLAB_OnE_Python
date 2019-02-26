@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/NLDataManager.iml" filepath="$PROJECT_DIR$/.idea/NLDataManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/happybase.iml" filepath="$PROJECT_DIR$/.idea/happybase.iml" />
     </modules>
   </component>

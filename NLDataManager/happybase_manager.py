@@ -16,7 +16,10 @@ class NLDataManager:
     def connect(self):
         self._hb_conn = happybase.Connection(self._server_addr)
         self._hb_table_conn = self._hb_conn.table(self._tablename)
-        print(self._hb_table_conn)
+        try:
+            self._hb_table_conn.counter_get('1', '1')
+        except Exception:
+            self.create_table()
 
     def disconnect(self):
         self._hb_conn.close()
@@ -63,7 +66,7 @@ class NLDataManager:
 
         return dict_merged_sp
 
-    def _hb_insertData(self, dict_nlentity: dict):
+    def _hb_insert_nle(self, dict_nlentity: dict):
         rowkeyset = dict_nlentity.keys()
         for rowkey in rowkeyset:
             self._hb_table_conn.put(rowkey, dict_nlentity[rowkey])
@@ -83,18 +86,19 @@ class NLDataManager:
 
     def insert_datedir(self, datedir: str):
         dict_dailydata = self._getmerge_data2dict(datedir)
-        self._hb_insertData(dict_dailydata)
+        self._hb_insert_nle(dict_dailydata)
 
     def select_datehm(self, dhm: str):  # dhm format: '%Y-%m-%d %H%M'
         row = self._hb_table_conn.row(dhm, ['sp_ird'])
 
         # print dict pretty
-        pp = pprint.PrettyPrinter(indent=4)
+        pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(row)
 
 
 if __name__ == "__main__":
     nldmgr = NLDataManager('210.102.142.14', 'natural_light')
     nldmgr.connect()
-    nldmgr.insert_datedir('D:/Desktop/test')
+    nldmgr.insert_datedir('D:/Desktop/2018 natural/20181120')
+    nldmgr.select_datehm('2018-11-20 1200')
 
