@@ -26,11 +26,11 @@ def getmerge_data2dict(datedir):
         print(datetime)
 
         # get dict from nl entity
-        mc = nle.get_dict('measurement conditions')
-        res = nle.get_dict('results')
-        gi = nle.get_dict('general information')
-        uv = nle.get_dict('uv')
-        sp = nle.get_dict('data')
+        mc = nle.get_category('measurement conditions')
+        res = nle.get_category('results')
+        gi = nle.get_category('general information')
+        uv = nle.get_category('uv')
+        sp = nle.get_category('data')
 
         # add column family to key
         dict_merged_sp[datetime] = dict()

@@ -2,23 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0242e619-3e5a-4294-931e-5d387dd9e98f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../official_NLDataManager/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../official_NLDataManager/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../JazDataExtarctor/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../JazDataExtarctor/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/NLDataManager.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/.idea/official_NLDataManager.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../JazDataExtarctor/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../NLDataManager/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/.idea/workspace.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/create_table.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/create_table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/deletion_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/deletion_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/happybase_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/happybase_manager.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/insert_data_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/insert_data_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/nldc_entity/cas_entity.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/nldc_entity/cas_entity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/nldc_entity/ref_func.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/nldc_entity/ref_func.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/progress.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/progress.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../NLDataManager/select_data_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/select_data_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/PKG-INFO" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/PKG-INFO" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/SOURCES.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/SOURCES.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/dependency_links.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/Lib/site-packages/happybase-1.1.0-py3.7.egg-info/dependency_links.txt" afterDir="false" />
@@ -134,7 +118,9 @@
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/Scripts/winsound.pyd" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/Scripts/winsound.pyd" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/pip-selfcheck.json" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/pip-selfcheck.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../NLDataManager/venv/pyvenv.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/venv/pyvenv.cfg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../official_NLDataManager/happybase_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/happybase_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../official_NLDataManager/insert_data_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/insert_data_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../official_NLDataManager/nldc_entity/cas_entity.py" beforeDir="false" afterPath="$PROJECT_DIR$/../official_NLDataManager/nldc_entity/cas_entity.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
