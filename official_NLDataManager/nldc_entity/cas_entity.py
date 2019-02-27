@@ -4,6 +4,7 @@ import os
 
 class CasEntity:
     """
+    CAS 140 CT - 152 Spectroradiometer Measurement Data
     <용어 정리>
     엔티티 (entity) : CAS 1회 측정에 해당하는 광특성 집합, ISD 파일 하나를 의미
     광특성 요소 (element) : ISD 로 출력되는 모든 값 하나하나 (ex. 조도 : Photometric)
@@ -47,7 +48,7 @@ class CasEntity:
         :return: ISD 파일이 정상적인지, mapping 중 오류는 없었는지 여부, :type: boolean
         """
         line = file.readline()
-        linetype = 0
+        category = 0
 
         if line.strip() != '[Curve Information]':
             return False
@@ -55,13 +56,13 @@ class CasEntity:
         while line:
             line = line.strip()
             if line == '[Measurement Conditions]':
-                linetype = 1
+                category = 1
             elif line == '[Results]':
-                linetype = 2
+                category = 2
             elif line == '[General Information]':
-                linetype = 3
+                category = 3
             elif line == 'Data':
-                linetype = 4
+                category = 4
             else:
                 # try:
                 if line.find('=') != -1:
@@ -84,16 +85,16 @@ class CasEntity:
                     line = file.readline()
                     continue
 
-                if linetype == 1:
+                if category == 1:
                     self.__measurement_conditions[key] = value
 
-                elif linetype == 2:
+                elif category == 2:
                     self.__results[key] = value
 
-                elif linetype == 3:
+                elif category == 3:
                     self.__general_information[key] = value
 
-                elif linetype == 4:
+                elif category == 4:
                     self.__data[float(key)] = value
 
                 else:  # type == 0

@@ -1,5 +1,9 @@
 def erythemal_action_spectrum(wavelength):
-    # 홍반가중함수
+    """
+    홍반 가중함수
+    :param wavelength: 파장
+    :return: 가중함수값
+    """
     if 250 <= int(wavelength) <= 298:
         return 1
     elif 298 < int(wavelength) <= 328:
@@ -11,7 +15,11 @@ def erythemal_action_spectrum(wavelength):
 
 
 def vitd_weight_func(wavelength):
-    # 비타민 D 가중함수
+    """
+    비타민 D 가중함수
+    :param wavelength: 파장
+    :return: 가중함수값
+    """
     if 252 <= int(wavelength) <= 330:
         weight_table = [0.036, 0.039, 0.043, 0.047, 0.051, 0.056, 0.061, 0.066, 0.075, 0.084,
                         0.093, 0.102, 0.112, 0.122, 0.133, 0.146, 0.160, 0.177, 0.195, 0.216,
@@ -28,7 +36,11 @@ def vitd_weight_func(wavelength):
 
 
 def vitd_weight_func_interpolated(wavelength):
-    # 비타민 D 가중함수
+    """
+    비타민 D 가중함수, 선형보간법 적용
+    :param wavelength: 파장
+    :return: 가중함수값
+    """
     if 252 <= int(wavelength) < 330:
         weight_table = [0.036, 0.039, 0.043, 0.047, 0.051, 0.056, 0.061, 0.066, 0.075, 0.084,
                         0.093, 0.102, 0.112, 0.122, 0.133, 0.146, 0.160, 0.177, 0.195, 0.216,
@@ -51,9 +63,13 @@ def vitd_weight_func_interpolated(wavelength):
         return 0
 
 
-# VERIFIED CALCULATION AND FUNCTION 180727
 def actinic_uv_weight_func(wavelength, dbg=False):
-    # 자외선 위해 가중함수 (IEC 62471)
+    """
+    자외선 위해 가중함수 (IEC 62471), 선형보간법 적용됨
+    VERIFIED CALCULATION AND FUNCTION 180727
+    :param wavelength: 파장
+    :return: 가중함수값
+    """
     if 200 <= int(wavelength) <= 400:
         wltable = [200, 205, 210, 215, 220, 225, 230, 235, 240, 245, 250,
                    254, 255, 260, 265, 270, 275, 280, 285, 290, 295, 297, 300,
