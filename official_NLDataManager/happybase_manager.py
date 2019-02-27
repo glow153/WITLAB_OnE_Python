@@ -20,7 +20,7 @@ class NLDataManager:
     def disconnect(self):
         self._hb_conn.close()
 
-    def _getmerge_data2dict(self, datedir):  # insert를 위한 메소드, isd파일 들어있는 폴더를 dictionary로 변환 후 통합
+    def _getmerge_nle_hbrow(self, datedir):  # insert를 위한 메소드, isd파일 들어있는 폴더를 HBase row 형태로 변환
         flist = CasEntity.search(datedir)
         dict_merged_sp = {}
 
@@ -82,7 +82,7 @@ class NLDataManager:
         self._hb_table_conn = self._hb_conn.table(self._tablename)
 
     def insert_datedir(self, datedir: str):  # 하나의 일자에 대한 isd 파일을 모아놓은 디렉터리의 모든 자연광 데이터 insert
-        dict_dailydata = self._getmerge_data2dict(datedir)
+        dict_dailydata = self._getmerge_nle_hbrow(datedir)
         self._hb_insert_nle(dict_dailydata)
 
     def select_datehm(self, dhm: str):  # HBase로부터 분 단위 데이터 조회, dhm format: '%Y-%m-%d %H%M'
