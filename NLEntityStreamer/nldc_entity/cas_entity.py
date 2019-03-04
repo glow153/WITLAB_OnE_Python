@@ -1,32 +1,54 @@
 import datetime
-import csv
 import os
 
 
-class CasEntity(object):
+class CasEntity:
+    """
+    CAS 140 CT - 152 Spectroradiometer Measurement Data
+    <용어 정리>
+    엔티티 (entity) : CAS 1회 측정에 해당하는 광특성 집합, ISD 파일 하나를 의미
+    광특성 요소 (element) : ISD 로 출력되는 모든 값 하나하나 (ex. 조도 : Photometric)
+    범주 (category) : element 들의 분류를 위한 데이터 집합, ISD 파일에서 []로 둘러싸여있음
+    """
+
+    # categories
     __measurement_conditions = {}
     __results = {}
     __general_information = {}
     __data = {}
     __uv = {}
-    objDatetime = None
+    valid = None  # 유효 플래그 (ISD 파일이 올바른 형식이고 mapping이 정상적이면 True)
+    objDatetime = None  # 측정 시간 객체, str으로 반환 및 시간연산을 위해 쓰임
 
     def __init__(self, fname):
+        """
+        1. ISD 파일 읽기
+        2. mapping
+        3. ISD 파일 닫기
+        4. 파장비율 계산
+        5. uv 계산
+        6. 측정 시간 객체 생성
+
+        :param fname: ISD 파일의 절대경로, :type: str
+        """
         isdfile = open(fname, 'rt', encoding='utf-8', errors='ignore')
-        valid = self.__map_data(isdfile)
+        self.valid = self.__map_data(isdfile)
         isdfile.close()
 
-        if valid:
-            # print(fname + ' is valid file')
-            datatable = self.get_dict_to_list(self.__data)
-            self.__set_additional_data(datatable)
-            self.__set_uv_dict(datatable)
-            self.objDatetime = self.__parse_objdt(
-                self.__general_information['Date'] + ' ' + self.__general_information['Time'])
+        if self.valid:
+            self.__set_additional_data(alg='trapezoid')
+            self.__set_uv_dict(alg='trapezoid')
+            self.objDatetime = datetime.datetime.strptime(
+                self.__general_information['Date'] + ' ' + self.__general_information['Time'], '%m/%d/%Y %I:%M:%S %p')
 
     def __map_data(self, file):
+        """
+        ISD 파일을 읽고 element를 category 별 dictionary에 mapping함
+        :param file: ISD 파일 객체
+        :return: ISD 파일이 정상적인지, mapping 중 오류는 없었는지 여부, :type: boolean
+        """
         line = file.readline()
-        linetype = 0
+        category = 0
 
         if line.strip() != '[Curve Information]':
             return False
@@ -34,13 +56,13 @@ class CasEntity(object):
         while line:
             line = line.strip()
             if line == '[Measurement Conditions]':
-                linetype = 1
+                category = 1
             elif line == '[Results]':
-                linetype = 2
+                category = 2
             elif line == '[General Information]':
-                linetype = 3
+                category = 3
             elif line == 'Data':
-                linetype = 4
+                category = 4
             else:
                 # try:
                 if line.find('=') != -1:
@@ -62,22 +84,17 @@ class CasEntity(object):
                 else:
                     line = file.readline()
                     continue
-                # except ValueError:
-                #     line = file.readline()
-                #     continue
 
-                # print(key, value)
-
-                if linetype == 1:
+                if category == 1:
                     self.__measurement_conditions[key] = value
 
-                elif linetype == 2:
+                elif category == 2:
                     self.__results[key] = value
 
-                elif linetype == 3:
+                elif category == 3:
                     self.__general_information[key] = value
 
-                elif linetype == 4:
+                elif category == 4:
                     self.__data[float(key)] = value
 
                 else:  # type == 0
@@ -86,12 +103,17 @@ class CasEntity(object):
             line = file.readline()
         return True
 
-    def __set_additional_data(self, datatable):
-        bird_vis = self.get_ird(datatable, 380, 780)
-        bird_sw = self.get_ird(datatable, 380, 480)
-        bird_mw = self.get_ird(datatable, 480, 560)
-        bird_lw = self.get_ird(datatable, 560, 780)
-        bird_narrow = self.get_ird(datatable, 446, 477)
+    def __set_additional_data(self, alg='rect'):
+        """
+        파장비율 계산
+        :param alg: 적분 알고리즘 선택, 'rect': 직사각형 공식, 'trapezoid': 사다리꼴 공식
+        :return:
+        """
+        bird_vis = self.get_ird(380, 780, alg=alg)
+        bird_sw = self.get_ird(380, 480, alg=alg)
+        bird_mw = self.get_ird(480, 560, alg=alg)
+        bird_lw = self.get_ird(560, 780, alg=alg)
+        bird_narrow = self.get_ird(446, 477, alg=alg)
 
         if bird_vis == 0:
             self.__results['swr'] = 0
@@ -104,28 +126,20 @@ class CasEntity(object):
             self.__results['lwr'] = bird_lw / bird_vis
             self.__results['narr'] = bird_narrow / bird_vis
 
-    def __set_uv_dict(self, datatable):
-        # calc bb ird of uv
-        # self.__uv['uv_general_info'] = {
-        #     'unit': 'W/m2',
-        # }
-        # self.__uv['integration_range'] = {
-        #     'tuv': [280, 400],
-        #     'uva': [315, 400],
-        #     'uvb': [280, 315],
-        #     'euv': [280, 400],
-        #     'euva': [315, 400],
-        #     'euvb': [280, 315],
-        #     'duv': [280, 400],
-        # }
-        self.__uv['tuv'] = self.get_ird(datatable, 280, 400)
-        self.__uv['uva'] = self.get_ird(datatable, 315, 400)
-        self.__uv['uvb'] = self.get_ird(datatable, 280, 315)
-        self.__uv['euv'] = self.get_ird(datatable, 280, 400, weight_func='ery')
-        self.__uv['euva'] = self.get_ird(datatable, 315, 400, weight_func='ery')
-        self.__uv['euvb'] = self.get_ird(datatable, 280, 315, weight_func='ery')
+    def __set_uv_dict(self, alg='rect'):
+        """
+        uv 계산
+        :param alg: 적분 알고리즘 선택, 'rect': 직사각형 공식, 'trapezoid': 사다리꼴 공식
+        :return:
+        """
+        self.__uv['tuv'] = self.get_ird(280, 400, alg=alg)
+        self.__uv['uva'] = self.get_ird(315, 400, alg=alg)
+        self.__uv['uvb'] = self.get_ird(280, 315, alg=alg)
+        self.__uv['euv'] = self.get_ird(280, 400, weight_func='ery', alg=alg)
+        self.__uv['euva'] = self.get_ird(315, 400, weight_func='ery', alg=alg)
+        self.__uv['euvb'] = self.get_ird(280, 315, weight_func='ery', alg=alg)
         self.__uv['uvi'] = self.__uv['euv'] * 40
-        self.__uv['duv'] = self.get_ird(datatable, 280, 400, weight_func='vitd')
+        self.__uv['duv'] = self.get_ird(280, 400, weight_func='vitd', alg=alg)
 
         if self.__uv['euv'] == 0:
             self.__uv['euva_ratio'] = 0
@@ -134,48 +148,41 @@ class CasEntity(object):
             self.__uv['euva_ratio'] = self.__uv['euva'] / self.__uv['euv']
             self.__uv['euvb_ratio'] = self.__uv['euvb'] / self.__uv['euv']
 
-        self.__uv['hazard_uv'] = self.get_ird(datatable, 200, 400, weight_func='uv_hazard', alg='trapezoid')
-
-    def __parse_objdt(self, strdt):
-        return datetime.datetime.strptime(strdt, '%m/%d/%Y %I:%M:%S %p')
+        self.__uv['auv'] = self.get_ird(200, 400, weight_func='actinic_uv', alg=alg)
 
     def get_datetime(self, tostr=False):
+        """
+        측정시간 객체를 반환
+        :param tostr: 문자열로 반환하려면 True
+        :return: 측정시간 정보 :type: datetime or str
+        """
         if tostr:
             return self.objDatetime.strftime('%Y-%m-%d %H:%M:%S')
         else:
             return self.objDatetime
 
-    def get_json(self, *args):
-        import json
-        dict_json = {}
+    def get_category(self, category='all', to_json=False):
+        """
+        ISD 파일의 큰 범주에 해당하는 전체 데이터를 dictionary 형태로 반환
+        :param category: 범주 이름
+        :param to_json: json으로 반환
+        :return: 범주 데이터 집합, :type: dictionary or json
+        """
 
-        if 'measurement conditions' in args:
-            dict_json['measurement conditions'] = self.__measurement_conditions
-        if 'results' in args:
-            dict_json['results'] = self.__results
-        if 'general information' in args:
-            dict_json['general information'] = self.__general_information
-        if 'data' in args:
-            dict_json['data'] = self.__data
-        if 'uv' in args:
-            dict_json['uv'] = self.__uv
+        d = {}
+        if category == 'measurement conditions':
+            d = self.__measurement_conditions
+        elif category == 'results':
+            d = self.__results
+        elif category == 'general information':
+            d = self.__general_information
+        elif category == 'data':
+            d = self.__data
+        elif category == 'uv':
+            d = self.__uv
 
-        return json.dumps(dict_json, indent=4)
-
-    def get_dict(self, item='all'):
-        if item == 'measurement conditions':
-            return self.__measurement_conditions
-        elif item == 'results':
-            return self.__results
-        elif item == 'general information':
-            return self.__general_information
-        elif item == 'data':
-            return self.__data
-        elif item == 'uv':
-            return self.__uv
-
-        elif item == 'all':
-            return {
+        elif category == 'all':
+            d = {
                 'measurement conditions': self.__measurement_conditions,
                 'results': self.__results,
                 'general information': self.__general_information,
@@ -183,20 +190,18 @@ class CasEntity(object):
                 'uv': self.__uv
             }
 
+        if to_json:
+            import json
+            return json.dumps(d, indent=2)
         else:
-            return None
-
-    @staticmethod
-    def get_dict_to_list(dict_src, kv=True):
-        retlist = []
-        for key in dict_src.keys():
-            if kv:
-                retlist.append([key, dict_src[key]])
-            else:
-                retlist.append(dict_src[key])
-        return retlist
+            return d
 
     def get_element(self, item=None):
+        """
+        entity 하나에 대한 광특성 요소 추출
+        :param item: 광특성 이름 (ISD 파일에 나와있는 이름, uv와 파장비율 등은 상기 코드에 정의된 이름으로 써야함)
+        :return: 광특성 값, :type: str
+        """
         keyset_mc = self.__measurement_conditions.keys()
         keyset_re = self.__results.keys()
         keyset_gi = self.__general_information.keys()
@@ -218,7 +223,11 @@ class CasEntity(object):
 
     @staticmethod
     def search(dirname):
-        # dirname 디렉토리 내의 모든 파일과 디렉토리 이름을 리스트로 반환함
+        """
+        dirname 디렉토리 내의 모든 파일과 디렉토리 이름을 리스트로 반환함
+        :param dirname: ISD 파일 들어있는 디렉토리 경로, :type: str
+        :return: 모든 isd 파일의 절대경로, :type: list[str]
+        """
         filelist = []
         filenames = os.listdir(dirname)
         for filename in filenames:
@@ -226,217 +235,76 @@ class CasEntity(object):
             filelist.append(full_filename)
         return filelist
 
-    @staticmethod
-    def get_ird(table, range_val1, range_val2, weight_func='none', alg='rect'):
-        # 분광 데이터 테이블로부터 특정 범위에 대한 광파장 복사량(broadband irradiance)을
-        # float 단일값으로 반환 (광파장복사량 == 적산 값)
-        # range_val1, range_val2 : 적분구간 시작, 끝 값
-        # table : get_dict_to_list()로부터 생성된 분광 데이터 테이블(list)
-        # weight_func : 가중함수 선택, 홍반가중함수('ery'), 비타민 d 가중함수('vitd'), 없음('none')
-        # alg : 적분 알고리즘 선택, 기본값('rect')은 직사각형 공식, 'trapezoid' 로 설정하면 사다리꼴 공식 적용
+    def get_ird(self, range_val_left, range_val_right, weight_func='none', alg='rect'):
+        """
+        분광 데이터 테이블로부터 특정 범위에 대한 광파장 복사량(broadband irradiance)을 float 단일값으로 반환 (광파장복사량 == 적산 값)
+        :param range_val_left: 적분구간 시작 값
+        :param range_val_right: 적분구간 끝 값
+        :param weight_func: 가중함수 선택, 홍반가중함수('ery'), 비타민 d 가중함수('vitd'), 없음('none')
+        :param alg: 적분 알고리즘 선택, 기본값('rect')은 직사각형 공식, 'trapezoid' 로 설정하면 사다리꼴 공식 적용
+        :return: 파장 복사량(broadband irradiance),  :type: float
+        """
+        ird = 0
+        if self.__data:
+            wls = list(self.__data.keys())
 
-        broadband_ird = 0
+            # for debug
+            # print(wls)
 
-        # for i in range(len(table) - 1):
-        index = 0
+            for i in range(len(wls) - 2):
+                wll = float(wls[i])
+                wlr = float(wls[i+1])
+                irdl = self.__data[wll]
+                irdr = self.__data[wlr]
 
-        for i in range(len(table) - 2):
-            wll = float(table[i][0])
-            irdl = float(table[i][1])
-            wlr = float(table[i + 1][0])
-            irdr = float(table[i + 1][1])
+                if irdl < 0 or irdr < 0:  # filter noise (negative value)
+                    continue
 
-            if irdl < 0 or irdr < 0:  # filter
-                # print(str(wll) + '\t0.0')
-                continue
+                if weight_func == 'ery':
+                    from nldc_entity.ref_func import erythemal_action_spectrum as eryf
+                    weightl = eryf(wll)
+                    weightr = eryf(wlr)
+                elif weight_func == 'vitd':
+                    from nldc_entity.ref_func import vitd_weight_func_interpolated as vitdf
+                    weightl = vitdf(wll)
+                    weightr = vitdf(wlr)
+                elif weight_func == 'actinic_uv':
+                    from nldc_entity.ref_func import actinic_uv_weight_func as actuvf
+                    weightl = actuvf(wll)
+                    weightr = actuvf(wlr)
+                else:
+                    weightl = 1
+                    weightr = 1
 
-            if weight_func == 'ery':
-                from nldc_entity.ref_func import erythemal_action_spectrum as eryf
-                weightl = eryf(wll)
-                weightr = eryf(wlr)
-            elif weight_func == 'vitd':
-                from nldc_entity.ref_func import vitd_weight_func as vitdf
-                weightl = vitdf(wll)
-                weightr = vitdf(wlr)
-            elif weight_func == 'uv_hazard':
-                from nldc_entity.ref_func import uv_hazard_weight_func as uvhzf
-                weightl = uvhzf(wll)
-                weightr = uvhzf(wlr)
-            else:
-                weightl = 1
-                weightr = 1
+                if range_val_left <= wll < range_val_right:
+                    try:
+                        # calculate weighted integration
+                        if alg == 'trapezoid':
+                            e = 0.5 * (wlr - wll) * (irdl * weightl + irdr * weightr)
+                        else:  # alg == 'rect'
+                            # print(str(wll) + '\t' + str(irdl*weightl))
+                            e = (wlr - wll) * (irdl * weightl)
+                    except TypeError:
+                        print('get_ird(): spectral irradiance value exception!')
+                        break
 
-            if range_val1 <= int(float(table[i][0])) < range_val2:
-                try:
-                    # calculate weighted integration
-                    if alg == 'trapezoid':
-                        e = 0.5 * (wlr - wll) * (irdl * weightl + irdr * weightr)
-                    else:  # alg == 'rect'
-                        # print(str(wll) + '\t' + str(irdl*weightl))
-                        e = (wlr - wll) * irdl * weightl
-                except TypeError:
-                    print('exception!')
-                    break
+                    ird += e
+                else:
+                    pass
 
-                broadband_ird += e
-            else:
-                pass
-
-        return broadband_ird
-
-    @staticmethod
-    def get_specirrad_table(fname):
-        # CAS파일(fname=FILExxxxx.ISD)의 분광(SPECtral IRRADinace) 데이터 테이블 반환
-        # ex) [[wl, ird], ... , []]
-
-        file = open(fname, 'rt', encoding='utf-8', errors='ignore')
-        line = file.readline()
-        table = []
-        valid = False
-
-        while line:
-            if valid:
-                try:
-                    table.append(line.strip().split())
-                except IndexError:
-                    break
-            if line.strip() == 'Data':
-                valid = True
-            line = file.readline()
-
-        return table
-
-    def get_attrib_fast(self, fname, attrib):
-        # CAS파일(fname=FILExxxxx.ISD)의 조도 값을 float 단일 값으로 반환
-        # select attrib
-        category = '[Results]'
-        key = ''
-
-        if attrib == 'inttime':
-            key = 'IntegrationTime [ms]'
-        elif attrib == 'illum':
-            key = 'Photometric [lx]'
-        elif attrib == 'uva':
-            key = 'UVA [W/m²]'
-        elif attrib == 'uvb':
-            key = 'UVB [W/m²]'
-        elif attrib == 'uvc':
-            key = 'UVC [W/m²]'
-        elif attrib == 'vis':
-            key = 'VIS [W/m²]'
-        elif attrib == 'cct':
-            key = 'CCT [K]'
-        elif attrib == 'colorcoord_x':
-            key = 'ColorCoordinates/x'
-        elif attrib == 'colorcoord_y':
-            key = 'ColorCoordinates/y'
-        elif attrib == 'colorcoord_z':
-            key = 'ColorCoordinates/z'
-        elif attrib == 'colorcoord_u':
-            key = 'ColorCoordinates/u'
-        elif attrib == 'peakwl':
-            key = 'PeakWavelength [nm]'
-        elif attrib == 'cri':
-            key = 'CRI'
-        elif attrib == 'cdi':
-            key = 'CDI'
-        elif attrib == 'date':
-            category = '[General Information]'
-            key = 'Date'
-        elif attrib == 'time':
-            category = '[General Information]'
-            key = 'Time'
-
-        file = open(fname, 'rt', encoding='utf-8', errors='ignore')
-        line = file.readline()
-        valid = False
-        value = 0.0
-
-        while line:
-            if valid:
-                # print(line)
-                try:
-                    linesplit = line.split('=')
-                    if linesplit[0] == key:
-                        value = linesplit[1].strip()
-                except IndexError as e:
-                    break
-                if line == '\n\r\n':
-                    break
-            if line.strip() == category:
-                valid = True
-            line = file.readline()
-
-        return value
-
-    def log_csv(self, rootdir):
-        # .ISD파일들이 들어있는 디렉토리명을 루트 디렉토리로 적어줘야함
-        # 생성될 csv 파일은 rootdir에 저장됨
-        outputFileName = '_output_jake.csv'
-
-        # 루트 디렉토리의 파일명리스트 가져오기
-        filelist = self.search(rootdir)
-
-        # csv 파일 출력 설정
-        outfile = open(rootdir + '/' + outputFileName, 'w', encoding='utf-8', newline='')
-        csv_writer = csv.writer(outfile)
-        # csv 첫줄에 컬럼명 적어주기
-        csv_writer.writerow(['time', 'illum', 'tuv', 'uva', 'uvb', 'euva', 'euvb', 'uvi'])
-
-        # 각 파일별 데이터 추출하기
-        for fname in filelist:
-            datatable = self.get_specirrad_table(fname)
-            hazard_uv = self.get_ird(datatable, 200, 400, weight_func='uv_hazard')
-            uva = self.get_ird(datatable, 315, 400)
-            uvb = self.get_ird(datatable, 280, 315)
-            euva = self.get_ird(datatable, 315, 400, weight_func='ery')
-            euvb = self.get_ird(datatable, 280, 315, weight_func='ery')
-            uvi = 40 * self.get_ird(datatable, 280, 400, weight_func='ery')
-
-            # filter
-            # if euvb + euva == 0:
-            #     ratio = 0
-            # else:
-            #     ratio = euvb / (euvb + euva)
-
-            # ccx = get_result_attrib(fname, 'colorcoord_x')
-            # ccy = get_result_attrib(fname, 'colorcoord_y')
-            # ccz = get_result_attrib(fname, 'colorcoord_z')
-            # ccu = get_result_attrib(fname, 'colorcoord_u')
-            # cct = get_result_attrib(fname, 'cct')
-            # cri = get_result_attrib(fname, 'cri')
-            # ccdtemp = get_CCDTemp(fname)
-
-            # if bbirrad != 0:
-            #     swr = get_bbird(380, 480, datatable) / bbirrad
-            #     narrow = get_bbird(446, 477, datatable) / bbirrad
-            # else:
-            #     swr = 0
-            #     narrow = 0
-
-            # 콘솔에 출력
-            # print('time:', timestamp, ', euva:', euva, ', euvb:', euvb, ', ratio:', ratio, ', illum:', illum)
-
-            # csv write
-            csv_writer.writerow([hazard_uv, uva, uvb, euva, euvb, uvi])
-
-        outfile.close()
+            return ird
+        else:
+            return
 
 
 if __name__ == '__main__':
-    rootdir = 'D:/Desktop'
-    outputFileName = 'Data.txt'
-
+    rootdir = 'D:/Desktop/확장곰국용/20181003'
     flist = CasEntity.search(rootdir)
-    outfile = open(rootdir + '/' + outputFileName, 'w', encoding='utf-8', newline='')
-    csv_writer = csv.writer(outfile)
-
-    csv_writer.writerow(['tuv', 'uva', 'uvb', 'euv', 'euva', 'euvb',
-                         'uvi', 'duv', 'euva_ratio', 'euvb_ratio', 'hazard_uv'])
 
     for fname in flist:
         # print('>>' + fname)
         entity = CasEntity(fname)
-        csv_writer.writerow(CasEntity.get_dict_to_list(entity.get_dict('uv'), kv=False))
+        a = entity.get_ird(200, 800)
+        print(a)
 
-    outfile.close()
+
